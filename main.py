@@ -1,10 +1,11 @@
-from coletor_de_links import crawler
-from coletor_de_links import scraper
+from crawler import crawler, crawler_lattes
+from scraper import scraper, scraper_lattes
 
 def main():
     links = crawler()
     scraper(links)
-    print("Coleta de links concluída.")
-
+    texto, docentes = crawler_lattes()
+    scraper_lattes(texto, docentes)
+    
 if __name__ == "__main__":
     main()
