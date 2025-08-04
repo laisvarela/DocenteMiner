@@ -11,7 +11,7 @@ def scraper(links_filtrados):
             texto = extrair_texto_pdf(url)
             if "compiladores" not in texto.lower():
                 continue
-
+            
             com_lattes, sem_lattes = extrair_linhas_de_tabelas(url)
 
             # Adiciona nomes à lista principal

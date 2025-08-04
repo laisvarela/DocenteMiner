@@ -17,7 +17,7 @@ def extrair_texto_pdf(url_pdf):
     except requests.exceptions.RequestException as e:
         print(f"\n❌ Extrair texto: Erro de conexão ou download: {e}")
     except Exception as e:
-        print(f"\n❌ Extrair texto: Erro ao processar o PDF: {e}")
+        print(f"\n❌ Extrair texto: Erro ao abrir ou extrair texto do PDF de {url_pdf}: {e}")
     return ""
 
 def extrair_linhas_de_tabelas(url):
@@ -59,9 +59,10 @@ def extrair_linhas_de_tabelas(url):
                                     if "lattes.cnpq.br" in link_lattes.lower():
                                         registro = f"Nome: {nome}\nEmail: {email}\nLattes: {link_lattes}\n\n"
                                         docentes_com_lattes.append(registro)
+                                        print(f"\n✅ Registrado docente com lattes: {nome} - {email} - {link_lattes}")
                                     else:
                                         docentes_sem_lattes.append(nome)
-
+                                        print(f"\n✅ Registrado docente sem lattes: {nome}")
         return "\n".join(docentes_com_lattes), "\n".join(docentes_sem_lattes)
 
     except requests.exceptions.Timeout:

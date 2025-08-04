@@ -4,8 +4,7 @@ from scraper import scraper, scraper_lattes
 def main():
     links = crawler()
     scraper(links)
-    texto, docentes = crawler_lattes()
-    scraper_lattes(texto, docentes)
+    crawler_lattes()
     
 if __name__ == "__main__":
     main()

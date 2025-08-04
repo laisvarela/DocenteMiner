@@ -5,6 +5,7 @@ from selenium.webdriver.firefox.service import Service
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.firefox.options import Options
+from scraper import scraper_lattes
 
 options = Options()
 options.binary_location = r"C:\Program Files\Mozilla Firefox\firefox.exe"
@@ -32,8 +33,9 @@ def crawler():
 def crawler_lattes():
     print("🚀 Iniciando a coleta de Lattes...")
     texto = driver.find_element(By.TAG_NAME, "body").text
+    docente
     try:
-        with open("docentes_com_lattes.txt", "w", encoding="utf-8") as f:
+        with open("docentes_com_lattes.txt", "r", encoding="utf-8") as f:
             linhas = f.readlines()
             for linha in linhas:
                 if "Nome:" in linha:
@@ -42,25 +44,32 @@ def crawler_lattes():
                     email = linha
                 if "lattes:" in linha.lower():
                     lattes = linha.replace("Lattes:", "").strip()
+                    print(f"Acessando Lattes: {lattes}")
                     docente = f"{nome}\n{email}\n"
                     driver.get(lattes)
-                    WebDriverWait(driver, 30).until(
-                        EC.presence_of_element_located((By.ID, "textoBusca"))
-                    )
-                    return texto, [docente]
-            linhas.clear()
-        with open("docentes_sem_lattes.txt", "w", encoding="utf-8") as f:
-            linhas = f.readlines()
+                    WebDriverWait(driver, 30)
+                scraper_lattes(texto, [docente])
+            
+        with open("docentes_sem_lattes.txt", "r", encoding="utf-8") as f:
+            linhas2 = f.readlines()
             driver.get("https://buscatextual.cnpq.br/buscatextual/busca.do?metodo=apresentar")
+            
             checkbox = driver.find_element(By.ID, "buscarDemais").get_attribute("value")
+            WebDriverWait(driver, 30).until(
+                        EC.presence_of_element_located((By.ID, "buscarDemais"))
+            )
             if checkbox == "false":
                 driver.find_element(By.ID, "buscarDemais").click()
-            for nome in linhas:
+                
+            for nome in linhas2:
+                WebDriverWait(driver, 30).until(
+                        EC.presence_of_element_located((By.ID, "textoBusca"))
+                )
+                search_box = driver.find_element(By.CLASS_NAME, "input-text")
                 search_box.clear()
-                search_box = driver.find_element(By.NAME, "q")
-                search_box.send_keys(nome.strip())
+                search_box.send_keys(nome)
                 search_box.send_keys(Keys.ENTER)
-                return texto, [nome.strip()]
+                scraper_lattes(texto, [nome])
                 
     except FileNotFoundError:
         print("❌ Arquivo não encontrado.")    
