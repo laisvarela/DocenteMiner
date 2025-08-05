@@ -53,13 +53,13 @@ def extrair_linhas_de_tabelas(url):
                                         continue
 
                                     nome = linha_tratada[0]
-                                    email = linha_tratada[4]
+                                    contato = linha_tratada[4]
                                     link_lattes = linha_tratada[5]
 
                                     if "lattes.cnpq.br" in link_lattes.lower():
-                                        registro = f"Nome: {nome}\nEmail: {email}\nLattes: {link_lattes}\n\n"
+                                        registro = f"Nome: {nome}\nContato: {contato}\nLattes: {link_lattes}\n\n"
                                         docentes_com_lattes.append(registro)
-                                        print(f"\n✅ Registrado docente com lattes: {nome} - {email} - {link_lattes}")
+                                        print(f"\n✅ Registrado docente com lattes: {nome} - {contato} - {link_lattes}")
                                     else:
                                         docentes_sem_lattes.append(nome)
                                         print(f"\n✅ Registrado docente sem lattes: {nome}")

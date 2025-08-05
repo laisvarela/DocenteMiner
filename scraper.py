@@ -1,4 +1,11 @@
 from extrair_PDF import extrair_texto_pdf, extrair_linhas_de_tabelas
+from selenium import webdriver
+from selenium.webdriver.common.by import By
+from selenium.webdriver.common.keys import Keys
+from selenium.webdriver.firefox.service import Service
+from selenium.webdriver.support.ui import WebDriverWait
+from selenium.webdriver.support import expected_conditions as EC
+from selenium.webdriver.firefox.options import Options
 
 def scraper(links_filtrados):
     docentes_com_lattes = []
@@ -39,24 +46,37 @@ def scraper(links_filtrados):
     print(f"\n📁 Total de docentes identificados: {len(docentes_com_lattes) + len(docentes_sem_lattes)}")
 
 
-def scraper_lattes(texto_pagina, lista_docentes):
+def scraper_lattes(texto_pagina, docente):
     texto_pagina = texto_pagina.lower()  # padroniza para evitar variações
-
+    nome = ""
+    contato = ""
     if "compiladores" in texto_pagina:
-        for docente in lista_docentes:
-            dados = docente.split("\n")
-            if "nome:" in dados[0].lower() and "email:" in dados[1].lower():
-                nome = dados[0]
-                email = dados[1]
+        linhas = docente.split("\n")
+        # if len(linhas) > 1:
+        #     for linha in linhas:
+        #             if linha.lower().startswith("nome:"):
+        #                 nome = linha.strip()
+        #             elif linha.lower().startswith("contato:"):
+        #                 contato = linha.strip()
+        # else:
+        nome = docente.strip()
+        contato = buscar_contato(texto_pagina)
+        with open("docentes_compiladores.txt", "a", encoding="utf-8") as f:
+            f.write(f"{nome}\nContato: {contato}\n\n")
 
-            with open("docentes_compiladores.txt", "a", encoding="utf-8") as f:
-                f.write(f"{nome} - {email}\n")
-
-            print(f"✅ Registrado: {nome} - {email}")
+        print(f"✅ Registrado: {nome}\n{contato}")
     else:
         print("🔍 Nenhuma menção a 'compiladores' no texto da página.")
 
-
-
     
-        
+def buscar_contato(texto):
+    contato = ""
+    if "Telefone:" or "Email: " in texto:
+        linhas = texto.split("\n")
+        for linha in linhas:
+            if "telefone:" in linha:
+                contato = linha.replace("telefone:", "").strip()
+            elif "email:" in linha:
+                contato = linha.replace("email:", "").strip()
+                
+    return contato
