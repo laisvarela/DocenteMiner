@@ -23,9 +23,7 @@ def extrair_texto_pdf(url_pdf):
 def extrair_linhas_de_tabelas(url):
     try:
         resposta = requests.get(url, timeout=60)
-        docentes_com_lattes = []
-        docentes_sem_lattes = []
-
+        docentes = []
         with pdfplumber.open(BytesIO(resposta.content)) as pdf:
             for pagina in pdf.pages:
                 tabelas = pagina.extract_tables()
@@ -36,34 +34,22 @@ def extrair_linhas_de_tabelas(url):
                 for tabela in tabelas:
                     if tabela:
                         for linha in tabela:
-                            if linha and len(linha) >= 6:
-                                # Trata a primeira célula separadamente
-                                linha_tratada = []
-                                for i, celula in enumerate(linha):
-                                    if i == 0:  # nome
-                                        valor = celula.replace("\n", " ") if celula else ""
-                                    else:       # outras células
-                                        valor = celula.replace("\n", "") if celula else ""
-                                    linha_tratada.append(valor)
+                            if not linha or not linha[0]:  # ignora linhas vazias
+                                continue
 
-                                linha_texto = " ".join(linha_tratada)
+                            texto_linha = " ".join([str(item) for item in linha if item])
+                            
+                            if re.search(r"\b(Doutor|Mestre)\b", texto_linha):
+                                if "bibliografia" in texto_linha.lower():
+                                    continue
+                                nome = str(linha[0]).strip()
+                                nome_formatado = " ".join(nome.split())
+                                if nome_formatado and nome_formatado not in docentes:
+                                    docentes.append(nome_formatado)
+                                    print(f"✅ Registrado: {nome_formatado}")
 
-                                if re.search(r"\b(Doutor|Mestre)\b", linha_texto):
-                                    if "bibliografia" in linha_tratada[0].lower():
-                                        continue
 
-                                    nome = linha_tratada[0]
-                                    contato = linha_tratada[4]
-                                    link_lattes = linha_tratada[5]
-
-                                    if "lattes.cnpq.br" in link_lattes.lower():
-                                        registro = f"Nome: {nome}\nContato: {contato}\nLattes: {link_lattes}\n\n"
-                                        docentes_com_lattes.append(registro)
-                                        print(f"\n✅ Registrado docente com lattes: {nome} - {contato} - {link_lattes}")
-                                    else:
-                                        docentes_sem_lattes.append(nome)
-                                        print(f"\n✅ Registrado docente sem lattes: {nome}")
-        return "\n".join(docentes_com_lattes), "\n".join(docentes_sem_lattes)
+        return "\n".join(docentes)
 
     except requests.exceptions.Timeout:
         print(f"\n⏳ Extrair tabela: Tempo esgotado ao tentar acessar: {url}")
