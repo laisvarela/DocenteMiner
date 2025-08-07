@@ -10,20 +10,30 @@ def scraper(links_filtrados):
             texto = extrair_texto_pdf(url)
             if "compiladores" not in texto.lower():
                 continue
-            
+            try:
+                with open("docentes.txt", "r", encoding="utf-8") as f:
+                    nomes_arquivo = set(nome.strip() for nome in f if nome.strip())
+            except FileNotFoundError:
+                nomes_arquivo = set()
+
             docentes = extrair_linhas_de_tabelas(url)
 
             for nome in docentes.split("\n"):
-                if nome:
-                    docentes_lista.append(nome)
-                    
+                nome_limpo = nome.strip()
+                if nome_limpo and nome_limpo not in docentes_lista and nome_limpo not in nomes_arquivo:
+                    docentes_lista.append(nome_limpo)
+            
+            # Salva arquivos
+            with open("docentes.txt", "w", encoding="utf-8") as arq1:
+                arq1.write("\n".join(docentes_lista))
+                
+            print(f"\n✅ Registrado {len(docentes_lista)} novos docentes.")
+            
         except Exception as e:
             print(f"\n⚠️ Erro ao processar {url}: {e}")
             continue
             
-    # Salva arquivos
-    with open("docentes.txt", "w", encoding="utf-8") as arq1:
-        arq1.write("\n".join(docentes_lista))
+    
 
     print(f"\n📁 Total de docentes identificados: {len(docentes_lista)}")
 

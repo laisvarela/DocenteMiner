@@ -44,14 +44,29 @@ def extrair_linhas_de_tabelas(url):
                             if re.search(r"\b(Doutor|Mestre)\b", texto_linha):
                                 if "bibliografia" in texto_linha.lower():
                                     continue
+                               
                                 nome = str(linha[0]).strip()
+                                if (
+                                    re.search(r'\d', nome) or
+                                    ":" in nome or
+                                    "(" in nome or
+                                    ")" in nome or
+                                    "," in nome or
+                                    "." in nome or
+                                    ";" in nome or
+                                    "&" in nome or
+                                    "%" in nome or
+                                    re.search(r'\bI{1,3}\b', nome)  # detecta "I" ou "II" como palavra isolada
+                                ):
+                                    continue
+
+                                nome = nome.replace("-", "")
+
                                 nome_formatado = re.sub(r'(?<=[a-z])(?=[A-Z])', ' ', nome)
                                 nome_formatado = " ".join(nome_formatado.split())
                                 nome_normalizado = normalizar(nome_formatado)
                                 if nome_normalizado not in [normalizar(d) for d in docentes]:
                                     docentes.append(nome_formatado)
-                                    print(f"✅ Registrado: {nome_formatado}")
-
 
         return "\n".join(docentes)
 
