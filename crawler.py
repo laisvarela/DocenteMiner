@@ -13,11 +13,10 @@ options = Options()
 options.binary_location = r"C:\Program Files\Mozilla Firefox\firefox.exe"
 
 service = Service(executable_path="geckodriver.exe")
-
 driver = webdriver.Firefox(service=service, options=options)
-driver.get("https://www.google.com")
 
 def crawler():
+    driver.get("https://www.google.com")
     search_box = driver.find_element(By.CLASS_NAME, "gLFyf")
     search_box.send_keys("ppc ciência da computação pdf")
     search_box.send_keys(Keys.ENTER)
@@ -25,13 +24,47 @@ def crawler():
     WebDriverWait(driver, 100).until(
         EC.presence_of_element_located((By.ID, "search"))
     )
-    WebDriverWait(driver, 30).until(
+    
+    links = []
+
+    for pagina in range(1, 17):  # Vai da página 1 até 16
+        WebDriverWait(driver, 100).until(
             EC.presence_of_element_located((By.CLASS_NAME, "zReHs"))
         )
-    resultados = driver.find_elements(By.CLASS_NAME, "zReHs")
-    links = [link.get_attribute("href") for link in resultados if link.get_attribute("href")]
-    print(f"Total de links encontrados: {len(links)}")
 
+        resultados = driver.find_elements(By.CLASS_NAME, "zReHs")
+        novos_links = [link.get_attribute("href") for link in resultados if link.get_attribute("href")]
+        links.extend(novos_links)
+        print(f"🔎 Página {pagina} 🔗 Links encontrados na página: {len(novos_links)}")
+        try:
+            WebDriverWait(driver, 100).until(
+                EC.presence_of_element_located((By.CLASS_NAME, "NKTSme"))
+            )
+            botoes_paginas = driver.find_elements(By.XPATH, "//*[@class='NKTSme']")
+            proxima_pagina = f"Page {pagina+1}"
+            botao_correto = None
+            for botao in botoes_paginas:
+                link_tag = botao.find_element(By.TAG_NAME, "a")
+                if link_tag.get_attribute("aria-label") == proxima_pagina:
+                    botao_correto = link_tag
+                    break
+
+            if botao_correto:
+                botao_correto.click()
+                WebDriverWait(driver, 10).until(
+                    EC.presence_of_element_located((By.CLASS_NAME, "zReHs"))
+                )
+                time.sleep(2)  # Pequena pausa para garantir carregamento
+            else:
+                print(f"🚫 Botão para página {pagina+1} não encontrado.")
+                break
+
+                
+        except:
+            print("🚫 Não foi possível avançar para a próxima página.")
+            break
+
+    print(f"🔗 Total de links encontrados: {len(links)}")
     return links
 
 def crawler_lattes():
@@ -89,13 +122,13 @@ def crawler_lattes():
                         if "idbtnabrircurriculo" in id_resumo:
                             href_resumo = link_resumo.get_attribute("href")
                             if href_resumo is not None:
-                                time.sleep(2)
+                                time.sleep(5)
                                 link_resumo.click()
                                 
-                                time.sleep(2)
+                                time.sleep(5)
                                 abas = driver.window_handles
                                 driver.switch_to.window(abas[-1])
-                                time.sleep(2)
+                                time.sleep(5)
                                 WebDriverWait(driver, 30).until(
                                     EC.presence_of_element_located((By.CLASS_NAME, "resumo"))
                                 )

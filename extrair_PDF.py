@@ -3,6 +3,8 @@ import re
 import fitz
 import pdfplumber
 import requests
+import unicodedata
+
 
 def extrair_texto_pdf(url_pdf):
     try:
@@ -32,19 +34,21 @@ def extrair_linhas_de_tabelas(url):
                     continue
 
                 for tabela in tabelas:
-                    if tabela:
+                    if tabela and len(tabela[0])>1:
                         for linha in tabela:
                             if not linha or not linha[0]:  # ignora linhas vazias
                                 continue
-
-                            texto_linha = " ".join([str(item) for item in linha if item])
                             
+                            texto_linha = " ".join([str(item) for item in linha if item])
+
                             if re.search(r"\b(Doutor|Mestre)\b", texto_linha):
                                 if "bibliografia" in texto_linha.lower():
                                     continue
                                 nome = str(linha[0]).strip()
-                                nome_formatado = " ".join(nome.split())
-                                if nome_formatado and nome_formatado not in docentes:
+                                nome_formatado = re.sub(r'(?<=[a-z])(?=[A-Z])', ' ', nome)
+                                nome_formatado = " ".join(nome_formatado.split())
+                                nome_normalizado = normalizar(nome_formatado)
+                                if nome_normalizado not in [normalizar(d) for d in docentes]:
                                     docentes.append(nome_formatado)
                                     print(f"✅ Registrado: {nome_formatado}")
 
@@ -59,3 +63,7 @@ def extrair_linhas_de_tabelas(url):
         print(f"\n❌ Extrair tabela: Erro ao processar o PDF: {e}")
 
     return ""
+
+def normalizar(texto):
+    return unicodedata.normalize('NFKD', texto).encode('ASCII', 'ignore').decode('ASCII')
+

@@ -14,8 +14,8 @@ def scraper(links_filtrados):
             docentes = extrair_linhas_de_tabelas(url)
 
             for nome in docentes.split("\n"):
-                if nome.strip():
-                    docentes_lista.append(nome.strip())
+                if nome:
+                    docentes_lista.append(nome)
                     
         except Exception as e:
             print(f"\n⚠️ Erro ao processar {url}: {e}")
