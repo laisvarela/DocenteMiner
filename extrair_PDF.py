@@ -61,6 +61,7 @@ def extrair_linhas_de_tabelas(url):
                                     continue
 
                                 nome = nome.replace("-", "")
+                                nome = nome.replace("'", "")
 
                                 nome_formatado = re.sub(r'(?<=[a-z])(?=[A-Z])', ' ', nome)
                                 nome_formatado = " ".join(nome_formatado.split())
